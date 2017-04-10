@@ -1,5 +1,8 @@
 require 'nokogiri'
 require 'htmlentities'
+require 'tmpdir'
+
+$THRESHOLD = 100
 
 def fix_html(s)
   HTMLEntities.new.decode(s)
@@ -201,13 +204,25 @@ class BocaParser
 end
 
 if __FILE__ == $0 then
-  File.open("export.dat"){|f|
-    parser = BocaParser.new(f)
-    contest = parser.parse
-    File.open("contest.dat", "w"){|g|
-      out = TestsysOutput.new(g)
-      out.output(contest)
+  Dir.mktmpdir{|dir|
+    tmp_path = File.join(dir, "export.dat")
+    
+    File.open(tmp_path, "w"){|f|
+      IO.foreach("export.dat") do |line|
+        unless line.size > $THRESHOLD
+          f << line
+        end
+      end
     }
+
+    File.open(tmp_path){|f|
+      parser = BocaParser.new(f)
+      contest = parser.parse
+      File.open("contest.dat", "w"){|g|
+        out = TestsysOutput.new(g)
+        out.output(contest)
+      }
+    }  
   }
 end
 
