@@ -2,7 +2,7 @@ require 'nokogiri'
 require 'htmlentities'
 require 'tmpdir'
 
-$THRESHOLD = 100
+$THRESHOLD = 300
 
 def fix_html(s)
   HTMLEntities.new.decode(s)
